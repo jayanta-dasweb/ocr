@@ -23,18 +23,26 @@ def preprocess_image(image_path):
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     gray = clahe.apply(gray)
 
-    # Apply bilateral filter to reduce noise while keeping edges sharp
-    gray = cv2.bilateralFilter(gray, 9, 75, 75)
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # Sharpen the image
+    # Sharpening the image
     sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-    sharpened = cv2.filter2D(gray, -1, sharpen_kernel)
+    sharpened = cv2.filter2D(blurred, -1, sharpen_kernel)
 
     # Apply adaptive thresholding
     thresh = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
-    # Resize image to improve OCR accuracy for small text
-    processed_image = cv2.resize(thresh, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    # Apply dilation and erosion to improve text visibility
+    kernel = np.ones((1, 1), np.uint8)
+    processed_image = cv2.dilate(thresh, kernel, iterations=1)
+    processed_image = cv2.erode(processed_image, kernel, iterations=1)
+
+    # Apply bilateral filtering to reduce noise while keeping edges sharp
+    processed_image = cv2.bilateralFilter(processed_image, 9, 75, 75)
+
+    # Optional: Resize image to improve OCR accuracy for small text
+    processed_image = cv2.resize(processed_image, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
     return processed_image
 
