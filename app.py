@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import pytesseract
 from pdf2image import convert_from_path
+import difflib
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -76,22 +77,32 @@ def extract_text(file_path):
     else:
         raise ValueError("Unsupported file format")
 
+def calculate_accuracy(ocr_text, ground_truth):
+    matcher = difflib.SequenceMatcher(None, ocr_text, ground_truth)
+    accuracy = matcher.ratio() * 100
+    return accuracy
+
 @app.route('/')
 def upload_form():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return 'No file part'
+    if 'file' not in request.files or 'ground_truth' not in request.form:
+        return 'No file part or ground truth text'
+    
     file = request.files['file']
+    ground_truth = request.form['ground_truth']
+    
     if file.filename == '':
         return 'No selected file'
+    
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
-        extracted_text = extract_text(file_path)
-        return f'<h1>Extracted Text:</h1><pre>{extracted_text}</pre>'
+        ocr_text = extract_text(file_path)
+        accuracy = calculate_accuracy(ocr_text, ground_truth)
+        return f'<h1>Extracted Text:</h1><pre>{ocr_text}</pre><h2>Accuracy: {accuracy:.2f}%</h2>'
 
 if __name__ == "__main__":
     app.run(debug=True)

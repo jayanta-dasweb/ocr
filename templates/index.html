@@ -11,6 +11,9 @@
     <h1>Upload a File for OCR</h1>
     <form action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg">
+        <br><br>
+        <textarea name="ground_truth" rows="4" cols="50" placeholder="Enter the ground truth text here..."></textarea>
+        <br><br>
         <button type="submit">Upload</button>
     </form>
 </body>
