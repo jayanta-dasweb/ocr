@@ -8,6 +8,7 @@ This is a Flask-based OCR (Optical Character Recognition) application that allow
 - Uses Tesseract OCR to extract text from images.
 - Preprocesses images to improve OCR accuracy.
 - Allows users to input ground truth text to calculate OCR accuracy.
+- Provides an API endpoint for uploading files and getting OCR results in JSON format.
 
 ## Prerequisites
 

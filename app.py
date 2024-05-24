@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import os
 import cv2
 import numpy as np
@@ -103,6 +103,22 @@ def upload_file():
         ocr_text = extract_text(file_path)
         accuracy = calculate_accuracy(ocr_text, ground_truth)
         return f'<h1>Extracted Text:</h1><pre>{ocr_text}</pre><h2>Accuracy: {accuracy:.2f}%</h2>'
+
+@app.route('/api/upload', methods=['POST'])
+def api_upload_file():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(file_path)
+        ocr_text = extract_text(file_path)
+        return jsonify({"extracted_text": ocr_text}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
